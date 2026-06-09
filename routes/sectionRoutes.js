@@ -7,15 +7,21 @@ const sectionController = require('../controllers/sectionController');
 // nên ở đây ta chỉ cần viết '/intro' là đủ.
 
 // ==========================================
-// Quản lý các API cho phần Intro mới thêm
+// Quản lý các API cho phần Intro
 // ==========================================
 router.get('/intro', sectionController.getIntroSection);
 router.post('/intro', sectionController.upsertIntroSection);
 
 // ==========================================
-// Quản lý các API cho phần Hero mới thêm
+// Quản lý các API cho phần Hero 
 // ==========================================
 router.get('/hero', sectionController.getHeroSection);
 router.post('/hero', sectionController.upsertHeroSection);
+
+// ==========================================
+// Quản lý các API cho phần Product
+// ==========================================
+router.get('/product', sectionController.getProductSection);
+router.post('/product', sectionController.upsertProductSection);
 
 module.exports = router;
