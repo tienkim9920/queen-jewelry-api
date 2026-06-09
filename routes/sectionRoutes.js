@@ -24,4 +24,22 @@ router.post('/hero', sectionController.upsertHeroSection);
 router.get('/product', sectionController.getProductSection);
 router.post('/product', sectionController.upsertProductSection);
 
+// ==========================================
+// Quản lý các API cho phần Testimonial
+// ==========================================
+router.get('/testimonial', sectionController.getTestimonialSection);
+router.post('/testimonial', sectionController.upsertTestimonialSection);
+
+// ==========================================
+// Quản lý các API cho phần Final CTA
+// ==========================================
+router.get('/final-cta', sectionController.getFinalCTASection);
+router.post('/final-cta', sectionController.upsertFinalCTASection);
+
+// ==========================================
+// Quản lý các API cho phần FAQ
+// ==========================================
+router.get('/faq', sectionController.getFAQSection);
+router.post('/faq', sectionController.upsertFAQSection);
+
 module.exports = router;
