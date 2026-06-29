@@ -22,7 +22,9 @@
   "homepage": "https://github.com/tienkim9920/queen-jewelry-api#readme",
   "dependencies": {
     "cors": "^2.8.6",
+    "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "multer": "^2.2.0",
     "mysql2": "^3.22.5"
   },
   "devDependencies": {
