@@ -138,7 +138,9 @@ app.use((err, req, res, next) => {
 
 // Nạp các Routes cũ của dự án (để sau các middleware cấu hình hệ thống)
 const sectionRoutes = require('./routes/sectionRoutes');
+const cmsRoutes = require('./routes/cmsRoutes');
 app.use('/api/sections', sectionRoutes);
+app.use('/api/cms', cmsRoutes);
 
 // Khởi động server
 app.listen(port, () => {

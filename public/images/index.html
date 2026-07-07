@@ -11,6 +11,16 @@
             height: 200px;
             object-fit: cover;
             width: 100%;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-gallery {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-gallery:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
         }
     </style>
 </head>
@@ -18,20 +28,25 @@
 <body class="bg-light">
 
     <div class="container py-5">
-        <h1 class="text-center mb-4">Quản lý Thư viện Hình Ảnh</h1>
+        <h1 class="text-center mb-4 fw-bold text-primary">Quản lý Thư viện Hình Ảnh</h1>
 
-        <div class="card p-4 mb-5 shadow-sm mx-auto" style="max-width: 500px;">
-            <h5 class="card-title mb-3">Tải ảnh mới lên</h5>
+        <div class="card p-4 mb-5 shadow-sm mx-auto" style="max-width: 500px; border-radius: 12px;">
+            <h5 class="card-title mb-3 fw-semibold">Tải ảnh mới lên</h5>
             <form id="uploadForm">
                 <div class="mb-3">
                     <input class="form-control" type="file" id="imageInput" accept="image/*" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100" id="uploadBtn">Upload Ảnh</button>
+                <button type="submit" class="btn btn-primary w-100 fw-medium" id="uploadBtn">Upload Ảnh</button>
             </form>
         </div>
 
-        <h3 class="mb-3">Danh sách hình ảnh hiện có</h3>
+        <h3 class="mb-4 fw-semibold text-secondary">Danh sách hình ảnh hiện có</h3>
         <div class="row g-4" id="imageGrid">
+            <div class="text-center w-100 py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -55,23 +70,26 @@
 
                 const images = result.data;
                 if (images.length === 0) {
-                    imageGrid.innerHTML = `<div class="alert alert-warning w-100 text-center">Thư mục trống. Hãy tải lên hình ảnh đầu tiên!</div>`;
+                    imageGrid.innerHTML = `
+                        <div class="col-10 mx-auto text-center py-5">
+                            <div class="alert alert-warning">Thư mục trống. Hãy tải lên hình ảnh đầu tiên!</div>
+                        </div>`;
                     return;
                 }
 
                 // Vẽ cấu trúc HTML cho từng bức ảnh
                 imageGrid.innerHTML = images.map(img => `
-                    <div class="col-6 col-md-4 col-lg-3" id="img-card-${btoa(img.filename).replace(/=/g, '')}">
-                        <div class="card h-100 shadow-sm">
-                            <img src="${img.url}" class="card-img-top image-card" alt="Image">
-                            <div class="card-body p-2 d-flex flex-column justify-content-end">
-                                <p class="text-muted text-truncate small mb-2" title="${img.filename}">${img.filename}</p>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3" id="img-card-${btoa(img.filename).replace(/=/g, '')}">
+                        <div class="card h-100 shadow-sm card-gallery border-0">
+                            <img src="${img.url}" class="card-img-top image-card" alt="Image" loading="lazy">
+                            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                <p class="text-dark fw-medium text-truncate small mb-3" title="${img.filename}">${img.filename}</p>
                                 
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-primary flex-grow-1" style="padding: .15rem .4rem; font-size: .75rem; border-radius: .2rem;" onclick="copyToClipboard('${img.url}', this)">
+                                    <button class="btn btn-outline-primary btn-sm flex-grow-1 fw-medium" onclick="copyToClipboard('${img.url}', this)">
                                         Copy URL
                                     </button>
-                                    <button class="btn btn-danger btn-sm flex-grow-1" onclick="deleteImage('${img.filename}')">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteImage('${img.filename}')" title="Xóa ảnh">
                                         Xóa
                                     </button>
                                 </div>
@@ -80,33 +98,45 @@
                     </div>
                 `).join('');
 
-                // BỔ SUNG: Hàm xử lý copy URL vào bộ nhớ đệm (Clipboard) kèm hiệu ứng đổi chữ thông báo
-                async function copyToClipboard(url, button) {
-                    try {
-                        await navigator.clipboard.writeText(url);
-
-                        // Tạo hiệu ứng đổi chữ trên nút để người dùng biết đã copy thành công
-                        const originalText = button.innerText;
-                        button.innerText = 'Copied!';
-                        button.classList.replace('btn-outline-primary', 'btn-success');
-                        button.disabled = true;
-
-                        // Trả lại trạng thái nút ban đầu sau 1.5 giây
-                        setTimeout(() => {
-                            button.innerText = originalText;
-                            button.classList.replace('btn-success', 'btn-outline-primary');
-                            button.disabled = false;
-                        }, 1500);
-
-                    } catch (err) {
-                        console.error('Không thể copy URL: ', err);
-                        alert('Lỗi khi copy URL, vui lòng thử lại.');
-                    }
-                }
-
             } catch (error) {
                 console.error('Lỗi khi tải danh sách ảnh:', error);
                 imageGrid.innerHTML = `<div class="alert alert-danger w-100 text-center">Không thể kết nối đến Server API.</div>`;
+            }
+        }
+
+        // ĐƯỢC ĐƯA RA NGOÀI: Hàm xử lý copy URL vào bộ nhớ đệm (Clipboard) toàn cục
+        async function copyToClipboard(url, button) {
+            try {
+                // Giải pháp fallback nếu navigator.clipboard không chạy ở môi trường HTTP thường
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(url);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+
+                // Tạo hiệu ứng đổi chữ trên nút
+                const originalText = button.innerText;
+                button.innerText = '✓ Copied!';
+                button.classList.replace('btn-outline-primary', 'btn-success');
+                button.disabled = true;
+
+                // Trả lại trạng thái nút ban đầu sau 1.5 giây
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.classList.replace('btn-success', 'btn-outline-primary');
+                    button.disabled = false;
+                }, 1500);
+
+            } catch (err) {
+                console.error('Không thể copy URL: ', err);
+                alert('Lỗi khi copy URL, vui lòng thử lại.');
             }
         }
 
@@ -118,7 +148,7 @@
             if (!file) return;
 
             const formData = new FormData();
-            formData.append('image', file); // 'image' phải trùng với cấu trúc upload.single('image') bên backend
+            formData.append('image', file);
 
             uploadBtn.disabled = true;
             uploadBtn.innerText = 'Đang upload...';
@@ -131,7 +161,6 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('Tải ảnh lên thành công!');
                     uploadForm.reset();
                     loadImages(); // Tải lại danh sách ảnh mới
                 } else {
@@ -156,12 +185,11 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ filename }) // Truyền filename vào JSON body
+                    body: JSON.stringify({ filename })
                 });
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('Đã xóa ảnh thành công!');
                     loadImages(); // Làm mới danh sách hiển thị
                 } else {
                     alert('Lỗi khi xóa: ' + result.message);
